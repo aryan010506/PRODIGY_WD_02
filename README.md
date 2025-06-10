@@ -21,6 +21,6 @@ HTML5
 
 CSS3
 
-JavaScript (Vanilla)
 
 📸 preview
+![Image](https://github.com/user-attachments/assets/7511e00b-a19f-471f-a479-69ce8b132de7)
