@@ -1,0 +1,176 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Clock Stopwatch</title>
+  <style>
+    :root {
+      --bg-color: #121212;
+      --text-color: #00ffcc;
+      --face-bg: #1e1e1e;
+      --button-bg: #2c2c2c;
+      --button-text: #ffffff;
+      --button-hover: #00ffcc33;
+    }
+
+    body {
+      background: var(--bg-color);
+      color: var(--text-color);
+      margin: 0;
+      padding: 0;
+      font-family: 'Courier New', monospace;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      height: 100vh;
+      flex-direction: column;
+    }
+
+    .clock-container {
+      background: var(--face-bg);
+      border-radius: 50%;
+      width: 320px;
+      height: 320px;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      box-shadow: 0 0 20px #00ffcc55;
+      margin-bottom: 30px;
+    }
+
+    #display {
+      font-size: 3rem;
+      text-align: center;
+    }
+
+    .buttons {
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: center;
+      gap: 12px;
+      margin-bottom: 20px;
+    }
+
+    .buttons button {
+      background: var(--button-bg);
+      color: var(--button-text);
+      border: none;
+      padding: 14px 20px;
+      border-radius: 50px; /* round buttons */
+      cursor: pointer;
+      font-size: 1rem;
+      transition: background 0.2s, transform 0.2s;
+    }
+
+    .buttons button:hover {
+      background: var(--button-hover);
+      transform: scale(1.05);
+    }
+
+    ul#laps {
+      max-height: 120px;
+      overflow-y: auto;
+      list-style: none;
+      padding: 0;
+      width: 250px;
+      text-align: center;
+    }
+
+    #laps li {
+      border-bottom: 1px solid #444;
+      padding: 5px 0;
+      font-size: 0.95rem;
+      color: #ccc;
+    }
+  </style>
+</head>
+<body>
+  <div class="clock-container">
+    <div id="display">00:00.000</div>
+  </div>
+
+  <div class="buttons">
+    <button onclick="startStop()">Start</button>
+    <button onclick="pause()">Pause</button>
+    <button onclick="reset()">Reset</button>
+    <button onclick="lap()">Lap</button>
+    <button onclick="exportLaps()">Export</button>
+  </div>
+
+  <ul id="laps"></ul>
+
+  <script>
+    let startTime = null;
+    let elapsedTime = 0;
+    let timerInterval = null;
+
+    function timeToString(time) {
+      const date = new Date(time);
+      const minutes = String(date.getUTCMinutes()).padStart(2, '0');
+      const seconds = String(date.getUTCSeconds()).padStart(2, '0');
+      const milliseconds = String(date.getUTCMilliseconds()).padStart(3, '0');
+      return `${minutes}:${seconds}.${milliseconds}`;
+    }
+
+    function updateDisplay() {
+      const now = Date.now();
+      elapsedTime += now - startTime;
+      startTime = now;
+      document.getElementById('display').textContent = timeToString(elapsedTime);
+    }
+
+    function startStop() {
+      if (!timerInterval) {
+        startTime = Date.now();
+        timerInterval = setInterval(updateDisplay, 10);
+      }
+    }
+
+    function pause() {
+      if (timerInterval) {
+        clearInterval(timerInterval);
+        timerInterval = null;
+      }
+    }
+
+    function reset() {
+      pause();
+      elapsedTime = 0;
+      document.getElementById('display').textContent = "00:00.000";
+      document.getElementById('laps').innerHTML = '';
+    }
+
+    function lap() {
+      if (timerInterval) {
+        const lapTime = timeToString(elapsedTime);
+        const li = document.createElement('li');
+        li.textContent = `Lap ${document.getElementById('laps').children.length + 1}: ${lapTime}`;
+        document.getElementById('laps').appendChild(li);
+      }
+    }
+
+    function exportLaps() {
+      const laps = document.querySelectorAll('#laps li');
+      if (laps.length === 0) {
+        alert("No laps to export.");
+        return;
+      }
+
+      let text = '';
+      laps.forEach(lap => text += lap.textContent + '\n');
+
+      const blob = new Blob([text], { type: 'text/plain' });
+      const url = URL.createObjectURL(blob);
+
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = 'lap_times.txt';
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      URL.revokeObjectURL(url);
+    }
+  </script>
+</body>
+</html>
